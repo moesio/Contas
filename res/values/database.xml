@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="database_version">2</string>
+
+    <string-array name="database_tables">
+        <item>CREATE TABLE "COLLECT" (
+            _ID INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+            DATE TEXT NOT NULL,
+            SENT INTEGER, 
+			OM REAL,
+			CMSR REAL,
+			DC REAL
+            );</item>
+    </string-array>
+    <string-array name="database_upgrade">
+        <item>ALTER TABLE COLLECT ADD COLUMN SENT INTEGER;</item>
+    </string-array>
+    <!-- <string name="query_collect_save">insert into collect (date, om, cmsr, dc) values(?, ?, ?, ?)</string> -->
+    <string name="database_table_collect">collect</string>
+
+</resources>

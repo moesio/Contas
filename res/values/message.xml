@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="database_access_error">Erro de acesso aos dados</string>
+    <string name="database_save_ok">Informação registrada com sucesso</string>
+    <string name="collect_forbidden">Registro não efetuado. \nMês precisa ser fechado</string>
+    <string name="list_empty">Lista de movimentação vazia</string>
+    
+</resources>

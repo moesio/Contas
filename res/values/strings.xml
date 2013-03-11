@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">Contas</string>
+    <string name="menu_settings">Settings</string>
+    <string name="txt_om">OM: </string>
+    <string name="txt_cmsr">CMSR: </string>
+    <string name="txt_dc">DC: </string>
+    <string name="btn_save">Salvar</string>
+    <string name="btn_cancel">Cancelar</string>
+    <string name="title_activity_list">List</string>
+    <string name="title_activity_home">Home</string>
+    <string name="title_tab_form">Formulário</string>
+    <string name="title_tab_list">Lista</string>
+    <string name="dummy_content">DUMMY\nCONTENT</string>
+    <string name="dummy_button">Dummy Button</string>
+    <string name="title_activity_fullscreen">FullscreenActivity</string>
+    <string name="btn_refresh">Atualizar lista</string>
+    <string name="btn_close_month">Fechar mês</string>
+    <string name="btn_send">Enviar</string>
+    <string name="title_dialog_summary">Resumo do mês</string>
+    <string name="btn_clear">Limpar</string>
+    <string name="title_dialog_confirm">Confirmar</string>
+    <string name="txt_confirm_deletion">Apagar registro?</string>
+    <string name="txt_confirm_clear">Apagar tudo?</string>
+    <string name="txt_extra_value">RF: </string>
+    <string name="total">Total: </string>
+    <color name="color_list_date">#ffff00</color>
+
+</resources>
