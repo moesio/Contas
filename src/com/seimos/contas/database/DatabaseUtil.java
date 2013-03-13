@@ -21,5 +21,11 @@ public class DatabaseUtil {
 		}
 		return databaseHelper;
 	}
+	
+	public static void close() {
+		if (databaseHelper != null) {
+			databaseHelper.close();
+		}
+	}
 
 }

@@ -5,22 +5,29 @@ import java.util.Calendar;
 import java.util.Collections;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.os.Bundle;
 import android.support.v4.app.ListFragment;
 import android.text.Html;
+import android.util.AttributeSet;
+import android.view.ContextMenu;
+import android.view.ContextMenu.ContextMenuInfo;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
 import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
-import android.widget.CompoundButton.OnCheckedChangeListener;
-import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -30,6 +37,20 @@ import com.seimos.contas.R;
 import com.seimos.contas.manager.Manager;
 import com.seimos.contas.model.Collect;
 
+/**
+ * Mostra a listagem dos valores ordenados por dia
+ * @author moesio @ gmail.com
+ * @date Mar 12, 2013 2:10:21 PM
+ */
+/**
+ * @author moesio @ gmail.com
+ * @date Mar 12, 2013 2:11:08 PM
+ */
+/**
+ * @author moesio @ gmail.com
+ * @date Mar 12, 2013 2:11:26 PM
+ */
+@SuppressLint("SimpleDateFormat")
 public class List extends ListFragment {
 
 	private SimpleDateFormat format;
@@ -37,32 +58,247 @@ public class List extends ListFragment {
 	private Button btnRefresh;
 	private Button btnCloseMonth;
 	private Manager manager;
+	private Collect currentCollect;
+	private java.util.List<Collect> list = Collections.emptyList();
+
+	/**
+	 * Ouve o click do checkbox da listagem
+	 * @author moesio @ gmail.com
+	 * @date Mar 12, 2013 2:08:47 PM
+	 */
+	private class ListItemSentCheckboxChangeListener implements OnClickListener {
+
+		@Override
+		public void onClick(View v) {
+
+			final CheckBox chkSent = (CheckBox) v;
+			final boolean checked = chkSent.isChecked();
+
+			AlertDialog confirmDialog = new AlertDialog.Builder(getActivity())
+					.setTitle(R.string.txt_confirm)
+					.setNeutralButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
+
+						@Override
+						public void onClick(DialogInterface dialog, int which) {
+							chkSent.setChecked(!checked);
+						}
+					})
+					.setMessage(R.string.txt_confirm_sent)
+					.setPositiveButton(getResources().getString(android.R.string.ok),
+							new DialogInterface.OnClickListener() {
+
+								@Override
+								public void onClick(DialogInterface dialog, int which) {
+									System.out.println(checked);
+									currentCollect.setSent(checked);
+									if (!manager.update(currentCollect)) {
+										adapter.refresh();
+									}
+								}
+							}).create();
+			confirmDialog.show();
+		}
+	}
+
+	/**
+	 * Confirmação de envio de SMS após a entrada do valor extra que será adicionado ao relatório
+	 * @author moesio @ gmail.com
+	 * @date Mar 12, 2013 2:11:32 PM
+	 */
+	private class ConfirmSmsSendDialogListener implements DialogInterface.OnClickListener {
+		private final EditText editExtraValue;
+
+		private ConfirmSmsSendDialogListener(EditText editExtraValue) {
+			this.editExtraValue = editExtraValue;
+		}
+
+		@Override
+		public void onClick(DialogInterface dialog, int which) {
+
+			double om = 0, cmsr = 0;
+			Calendar baseDate = null;
+			for (Collect collect : list) {
+				if (baseDate == null) {
+					baseDate = collect.getDate();
+				}
+				om += collect.getOm();
+				cmsr += collect.getCmsr();
+			}
+
+			double extraValue;
+			try {
+				extraValue = Double.valueOf(editExtraValue.getText().toString());
+			} catch (NumberFormatException e) {
+				extraValue = 0;
+			}
+			SimpleDateFormat format = new SimpleDateFormat("MMMM/yyyy");
+
+			String smsMessage = String.format(
+					getResources().getString(R.string.title_dialog_summary) + " " + format.format(baseDate.getTime())
+							+ "\n" + getResources().getString(R.string.txt_om) //
+							+ " %1$,.2f\n" + getResources().getString(R.string.txt_cmsr) //
+							+ " %2$,.2f\n" + getResources().getString(R.string.txt_extra_value) //
+							+ " %3$,.2f\n" + "---------------\n" //
+							+ getActivity().getString(R.string.total) //
+							+ " %4$,.2f", om, cmsr, extraValue, (om + cmsr + extraValue));
+			Intent smsIntent = new Intent(Intent.ACTION_VIEW);
+			smsIntent.setType("vnd.android-dir/mms-sms");
+			smsIntent.putExtra("sms_body", smsMessage);
+			startActivity(smsIntent);
+		}
+	}
+
+	/**
+	 * Ouve os botões da caixa de diálogo do resumo do mês
+	 * @author moesio @ gmail.com
+	 * @date Mar 12, 2013 2:12:33 PM
+	 */
+	private class SummaryDialogToolbarListener implements DialogInterface.OnClickListener {
+
+		@Override
+		public void onClick(DialogInterface dialog, int which) {
+			switch (which) {
+			case AlertDialog.BUTTON_POSITIVE:
+				// It will ask for an extra value, through a dialog. It's the left most button
+				askExtraValue();
+				break;
+			case AlertDialog.BUTTON_NEUTRAL:
+				// It's the middle button
+				clearList();
+				break;
+			case AlertDialog.BUTTON_NEGATIVE:
+				// Do nothing. It's cancel button. The right most one.
+				break;
+			}
+		}
+
+		private void askExtraValue() {
+			if (list.isEmpty()) {
+				Toast.makeText(getActivity(), R.string.list_empty, Toast.LENGTH_SHORT).show();
+			} else {
+
+				LayoutInflater inflater = (LayoutInflater) getActivity().getSystemService(
+						Context.LAYOUT_INFLATER_SERVICE);
+				View view = inflater.inflate(R.layout.layout_extra_value, null);
+
+				final EditText editExtraValue = (EditText) view.findViewById(R.id.editExtraValue);
+
+				ConfirmSmsSendDialogListener confirmSmsSendDialogListener = new ConfirmSmsSendDialogListener(
+						editExtraValue);
+				AlertDialog confirmSmsSendDialog = new AlertDialog.Builder(getActivity()).setView(view)
+						.setNeutralButton(android.R.string.cancel, null)
+						.setPositiveButton(android.R.string.ok, confirmSmsSendDialogListener).create();
+				confirmSmsSendDialog.show();
+			}
+		}
+
+		private void clearList() {
+			AlertDialog clearListDialog = new AlertDialog.Builder(getActivity()).setMessage(R.string.txt_confirm_clear)
+					.setTitle(R.string.title_dialog_confirm).setNeutralButton(android.R.string.cancel, null)
+					.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+
+						@Override
+						public void onClick(DialogInterface dialog, int which) {
+							manager.clear();
+							adapter.refresh();
+						}
+					}).create();
+			clearListDialog.show();
+		}
+
+	}
+
+	/**
+	 * Ouve os botões da tela principal da listagem
+	 * @author moesio @ gmail.com
+	 * @date Mar 12, 2013 2:16:03 PM
+	 */
+	private class ToolbarListener implements OnClickListener {
+
+		@Override
+		public void onClick(View v) {
+			switch (v.getId()) {
+			case R.id.btnRefresh:
+				adapter.refresh();
+				break;
+			case R.id.btnCloseMonth:
+				adapter.refresh();
+				closeMonth();
+				break;
+			}
+		}
+
+		private void closeMonth() {
+			adapter.refresh();
+
+			AlertDialog summaryDialog = new AlertDialog.Builder(getActivity()).create();
+			summaryDialog.setTitle(getResources().getString(R.string.title_dialog_summary));
+
+			final java.util.List<Collect> list = adapter.getList();
+			double om = 0, cmsr = 0, dc = 0;
+			for (Collect collect : list) {
+				om += collect.getOm();
+				cmsr += collect.getCmsr();
+				dc += collect.getDc();
+			}
+
+			final String formattedMessage = String.format("<p>" + //
+					"<b>" + getResources().getString(R.string.txt_om) + "</b> %1$,.2f<br/>" + //
+					"<b>" + getResources().getString(R.string.txt_cmsr) + "</b> %2$,.2f<br/>" + //
+					"<b>" + getResources().getString(R.string.txt_dc) + "</b> %3$,.2f<br/>" + //
+					"<b>" + getResources().getString(R.string.total) + "</b> %4$,.2f" + //
+					"</p>", om, cmsr, dc, (om + cmsr + dc));
+			summaryDialog.setMessage(Html.fromHtml(formattedMessage));
+
+			android.content.DialogInterface.OnClickListener listener = new SummaryDialogToolbarListener();
+
+			summaryDialog.setButton(AlertDialog.BUTTON_POSITIVE, getResources().getString(R.string.btn_send), listener);
+			summaryDialog.setButton(AlertDialog.BUTTON_NEGATIVE, getResources().getString(R.string.btn_cancel),
+					listener);
+			summaryDialog.setButton(AlertDialog.BUTTON_NEUTRAL, getResources().getString(R.string.btn_clear), listener);
+
+			summaryDialog.show();
+		}
+	}
+
+	/**
+	 * Ouve o click no item da listagem. Permite apagá-lo.
+	 * @author moesio @ gmail.com
+	 * @date Mar 12, 2013 2:17:44 PM
+	 */
+	private class ItemRemovalDialogConfirmListener implements DialogInterface.OnClickListener {
+		private final long id;
+
+		private ItemRemovalDialogConfirmListener(long id) {
+			this.id = id;
+		}
+
+		@Override
+		public void onClick(DialogInterface dialog, int which) {
+			switch (which) {
+			case AlertDialog.BUTTON_POSITIVE:
+				if (manager.remove(id)) {
+					adapter.refresh();
+				}
+				break;
+			}
+		}
+	}
 
 	@Override
 	public void onListItemClick(ListView l, View v, int position, final long id) {
-		android.content.DialogInterface.OnClickListener listener = new DialogInterface.OnClickListener() {
+		android.content.DialogInterface.OnClickListener listener = new ItemRemovalDialogConfirmListener(id);
 
-			@Override
-			public void onClick(DialogInterface dialog, int which) {
-				switch (which) {
-				case AlertDialog.BUTTON_POSITIVE:
-					if (manager.remove(id)) {
-						adapter.refresh();
-					}
-					break;
-				}
-			}
-		};
-
-		AlertDialog dialog = new AlertDialog.Builder(getActivity()).create();
-		dialog.setTitle(getResources().getString(R.string.title_dialog_confirm));
-		dialog.setMessage(getResources().getString(R.string.txt_confirm_deletion));
-		dialog.setButton(AlertDialog.BUTTON_POSITIVE, getResources().getString(android.R.string.yes), listener);
-		dialog.setButton(AlertDialog.BUTTON_NEGATIVE, getResources().getString(android.R.string.no), listener);
-		dialog.show();
+		AlertDialog itemRemovalDialog = new AlertDialog.Builder(getActivity()).create();
+		itemRemovalDialog.setTitle(getResources().getString(R.string.title_dialog_confirm));
+		itemRemovalDialog.setMessage(getResources().getString(R.string.txt_confirm_deletion));
+		itemRemovalDialog.setButton(AlertDialog.BUTTON_POSITIVE, getResources().getString(android.R.string.yes),
+				listener);
+		itemRemovalDialog.setButton(AlertDialog.BUTTON_NEGATIVE, getResources().getString(android.R.string.no),
+				listener);
+		itemRemovalDialog.show();
 	}
 
-	@SuppressLint("SimpleDateFormat")
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
@@ -75,127 +311,11 @@ public class List extends ListFragment {
 		setListAdapter(adapter);
 
 		btnRefresh = (Button) getView().findViewById(R.id.btnRefresh);
-		btnRefresh.setOnClickListener(new OnClickListener() {
-
-			@Override
-			public void onClick(View v) {
-				adapter.refresh();
-			}
-
-		});
-
 		btnCloseMonth = (Button) getView().findViewById(R.id.btnCloseMonth);
 
-		btnCloseMonth.setOnClickListener(new OnClickListener() {
-
-			@SuppressLint("DefaultLocale")
-			@Override
-			public void onClick(View v) {
-				adapter.refresh();
-
-				AlertDialog dialog = new AlertDialog.Builder(getActivity()).create();
-				dialog.setTitle(getResources().getString(R.string.title_dialog_summary));
-
-				final java.util.List<Collect> list = adapter.getList();
-				double om = 0, cmsr = 0, dc = 0;
-				for (Collect collect : list) {
-					om += collect.getOm();
-					cmsr += collect.getCmsr();
-					dc += collect.getDc();
-				}
-
-				final String formattedMessage = String.format("<p>" + //
-						"<b>" + getResources().getString(R.string.txt_om) + "</b> %1$,.2f<br/>" + //
-						"<b>" + getResources().getString(R.string.txt_cmsr) + "</b> %2$,.2f<br/>" + //
-						"<b>" + getResources().getString(R.string.txt_dc) + "</b> %3$,.2f" + //
-						"</p>", om, cmsr, dc);
-				dialog.setMessage(Html.fromHtml(formattedMessage));
-
-				android.content.DialogInterface.OnClickListener listener = new DialogInterface.OnClickListener() {
-
-					@Override
-					public void onClick(DialogInterface dialog, int which) {
-						switch (which) {
-						case AlertDialog.BUTTON_POSITIVE:
-
-							if (list.isEmpty()) {
-								Toast.makeText(getActivity(), R.string.list_empty, Toast.LENGTH_SHORT).show();
-							} else {
-
-								LayoutInflater inflater = (LayoutInflater) getActivity().getSystemService(
-										Context.LAYOUT_INFLATER_SERVICE);
-								View view = inflater.inflate(R.layout.layout_extra_value, null);
-
-								final EditText editExtraValue = (EditText) view.findViewById(R.id.editExtraValue);
-
-								new AlertDialog.Builder(getActivity()).setView(view)
-										.setNeutralButton(android.R.string.cancel, null)
-										.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-
-											@Override
-											public void onClick(DialogInterface dialog, int which) {
-
-												double om = 0, cmsr = 0;
-												Calendar baseDate = null;
-												for (Collect collect : list) {
-													if (baseDate == null) {
-														baseDate = collect.getDate();
-													}
-													om += collect.getOm();
-													cmsr += collect.getCmsr();
-												}
-
-												double extraValue = Double.valueOf(editExtraValue.getText().toString());
-												SimpleDateFormat format = new SimpleDateFormat("MMMM/yyyy");
-
-												String smsMessage = String.format(
-														getResources().getString(R.string.title_dialog_summary)
-																+ " "
-																+ format.format(baseDate.getTime())
-																+ "\n"
-																+ getResources().getString(R.string.txt_om) //
-																+ " %1$,.2f\n"
-																+ getResources().getString(R.string.txt_cmsr) //
-																+ " %2$,.2f\n"
-																+ getResources().getString(R.string.txt_extra_value) //
-																+ " %3$,.2f\n" + "---------------\n" //
-																+ getActivity().getString(R.string.total) //
-																+ " %4$,.2f", om, cmsr, extraValue,
-														(om + cmsr + extraValue));
-												Intent smsIntent = new Intent(Intent.ACTION_VIEW);
-												smsIntent.setType("vnd.android-dir/mms-sms");
-												smsIntent.putExtra("sms_body", smsMessage);
-												startActivity(smsIntent);
-											}
-
-										}).show();
-							}
-							break;
-						case AlertDialog.BUTTON_NEUTRAL:
-							new AlertDialog.Builder(getActivity()).setMessage(R.string.txt_confirm_clear)
-									.setTitle(R.string.title_dialog_confirm)
-									.setNeutralButton(android.R.string.cancel, null)
-									.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-
-										@Override
-										public void onClick(DialogInterface dialog, int which) {
-											manager.clear();
-											adapter.refresh();
-										}
-									}).show();
-							//							Toast.makeText(getActivity(), "Fake clear", Toast.LENGTH_SHORT).show();
-							break;
-						}
-					}
-				};
-
-				dialog.setButton(AlertDialog.BUTTON_POSITIVE, getResources().getString(R.string.btn_send), listener);
-				dialog.setButton(AlertDialog.BUTTON_NEGATIVE, getResources().getString(R.string.btn_cancel), listener);
-				dialog.setButton(AlertDialog.BUTTON_NEUTRAL, getResources().getString(R.string.btn_clear), listener);
-
-				dialog.show();
-			}
-		});
+		ToolbarListener toolbarListener = new ToolbarListener();
+		btnRefresh.setOnClickListener(toolbarListener);
+		btnCloseMonth.setOnClickListener(toolbarListener);
 	}
 
 	@Override
@@ -206,7 +326,6 @@ public class List extends ListFragment {
 
 	public class Adapter extends BaseAdapter {
 
-		private java.util.List<Collect> list = Collections.emptyList();
 		private Context context;
 
 		public Adapter(Context context) {
@@ -221,7 +340,6 @@ public class List extends ListFragment {
 
 		public void refresh() {
 			list = manager.list();
-
 			notifyDataSetChanged();
 		}
 
@@ -251,27 +369,19 @@ public class List extends ListFragment {
 			TextView txtDC = (TextView) view.findViewById(R.id.txtDC);
 			TextView txtTotal = (TextView) view.findViewById(R.id.txtTotal);
 			CheckBox chkSent = (CheckBox) view.findViewById(R.id.chkSent);
-			
-			final Collect collect = list.get(position);
-			Calendar date = collect.getDate();
-			Boolean sent = collect.getSent();
-			Double om = collect.getOm();
-			Double cmsr = collect.getCmsr();
-			Double dc = collect.getDc();
+
+			currentCollect = list.get(position);
+			Calendar date = currentCollect.getDate();
+			Boolean sent = currentCollect.getSent();
+			Double om = currentCollect.getOm();
+			Double cmsr = currentCollect.getCmsr();
+			Double dc = currentCollect.getDc();
 			Double total = om + cmsr + dc;
 
-			OnCheckedChangeListener listener = new OnCheckedChangeListener() {
-				
-				@Override
-				public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-					collect.setSent(isChecked);
-					if (!manager.update(collect)) {
-						adapter.refresh();
-					}
-				}
-			};
-			chkSent.setOnCheckedChangeListener(listener);
-			
+			System.out.println();
+			ListItemSentCheckboxChangeListener listener = new ListItemSentCheckboxChangeListener();
+			chkSent.setOnClickListener(listener);
+
 			txtDate.setText(format.format(date.getTime()));
 			chkSent.setChecked(sent);
 			txtOM.setText(String.format(" %1$,.2f", om));
@@ -281,7 +391,159 @@ public class List extends ListFragment {
 
 			return view;
 		}
-
 	}
 
+	public Adapter getAdapter() {
+		return adapter;
+	}
+
+	@Override
+	public void onActivityResult(int requestCode, int resultCode, Intent data) {
+		System.out.println(1);
+		super.onActivityResult(requestCode, resultCode, data);
+	}
+
+	@Override
+	public void onAttach(Activity activity) {
+		System.out.println(2);
+		super.onAttach(activity);
+	}
+
+	@Override
+	public void onConfigurationChanged(Configuration newConfig) {
+		System.out.println(3);
+		super.onConfigurationChanged(newConfig);
+	}
+
+	@Override
+	public boolean onContextItemSelected(MenuItem item) {
+		System.out.println(4);
+		return super.onContextItemSelected(item);
+	}
+
+	@Override
+	public void onCreate(Bundle savedInstanceState) {
+		System.out.println(5);
+		super.onCreate(savedInstanceState);
+	}
+
+	@Override
+	public Animation onCreateAnimation(int transit, boolean enter, int nextAnim) {
+		System.out.println(6);
+		return super.onCreateAnimation(transit, enter, nextAnim);
+	}
+
+	@Override
+	public void onCreateContextMenu(ContextMenu menu, View v, ContextMenuInfo menuInfo) {
+		System.out.println(7);
+		super.onCreateContextMenu(menu, v, menuInfo);
+	}
+
+	@Override
+	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+		System.out.println(8);
+		super.onCreateOptionsMenu(menu, inflater);
+	}
+
+	@Override
+	public void onDestroy() {
+		System.out.println(9);
+		super.onDestroy();
+	}
+
+	@Override
+	public void onDestroyOptionsMenu() {
+		System.out.println(10);
+		super.onDestroyOptionsMenu();
+	}
+
+	@Override
+	public void onDestroyView() {
+		System.out.println(11);
+		super.onDestroyView();
+	}
+
+	@Override
+	public void onDetach() {
+		System.out.println(12);
+		super.onDetach();
+	}
+
+	@Override
+	public void onHiddenChanged(boolean hidden) {
+		System.out.println(13);
+		super.onHiddenChanged(hidden);
+	}
+
+	@Override
+	public void onInflate(Activity activity, AttributeSet attrs, Bundle savedInstanceState) {
+		System.out.println(14);
+		super.onInflate(activity, attrs, savedInstanceState);
+	}
+
+	@Override
+	public void onLowMemory() {
+		System.out.println(15);
+		super.onLowMemory();
+	}
+
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		System.out.println(16);
+		return super.onOptionsItemSelected(item);
+	}
+
+	@Override
+	public void onOptionsMenuClosed(Menu menu) {
+		System.out.println(17);
+		super.onOptionsMenuClosed(menu);
+	}
+
+	@Override
+	public void onPause() {
+		System.out.println(18);
+		super.onPause();
+	}
+
+	@Override
+	public void onPrepareOptionsMenu(Menu menu) {
+		System.out.println(19);
+		super.onPrepareOptionsMenu(menu);
+	}
+
+	@Override
+	public void onResume() {
+		System.out.println(20);
+		super.onResume();
+	}
+
+	@Override
+	public void onSaveInstanceState(Bundle outState) {
+		System.out.println(21);
+		super.onSaveInstanceState(outState);
+	}
+
+	@Override
+	public void onStart() {
+		System.out.println(22);
+		super.onStart();
+	}
+
+	@Override
+	public void onStop() {
+		System.out.println(23);
+		super.onStop();
+	}
+
+	@Override
+	public void onViewCreated(View view, Bundle savedInstanceState) {
+		System.out.println(24);
+		super.onViewCreated(view, savedInstanceState);
+	}
+
+	@Override
+	public void onViewStateRestored(Bundle savedInstanceState) {
+		System.out.println(25);
+		super.onViewStateRestored(savedInstanceState);
+	}
 }

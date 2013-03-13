@@ -2,7 +2,9 @@ package com.seimos.contas.activity;
 
 import java.util.ArrayList;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
+import android.database.DatabaseUtils;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
@@ -15,9 +17,12 @@ import android.widget.TabHost;
 import android.widget.TabWidget;
 
 import com.seimos.contas.R;
+import com.seimos.contas.database.DatabaseHelper;
+import com.seimos.contas.database.DatabaseUtil;
 import com.seimos.contas.fragment.Form;
 import com.seimos.contas.fragment.List;
 
+@SuppressLint("NewApi")
 public class Home extends FragmentActivity {
 
 	TabHost mTabHost;
@@ -35,10 +40,12 @@ public class Home extends FragmentActivity {
 		mViewPager = (ViewPager) findViewById(R.id.pager);
 
 		mTabsAdapter = new TabsAdapter(this, mTabHost, mViewPager);
-//		mTabsAdapter.addTab(mTabHost.newTabSpec("form").setIndicator(getResources().getString(R.string.title_tab_form)), Form.class, null);
-//		mTabsAdapter.addTab(mTabHost.newTabSpec("list").setIndicator(getResources().getString(R.string.title_tab_list)), List.class, null);
-		mTabsAdapter.addTab(mTabHost.newTabSpec("form").setIndicator(getResources().getString(R.string.title_tab_form), getResources().getDrawable(R.drawable.ic_tab_form)), Form.class, null);
-		mTabsAdapter.addTab(mTabHost.newTabSpec("list").setIndicator(getResources().getString(R.string.title_tab_list), getResources().getDrawable(R.drawable.ic_tab_list)), List.class, null);
+		mTabsAdapter.addTab(
+				mTabHost.newTabSpec("form").setIndicator(getResources().getString(R.string.title_tab_form),
+						getResources().getDrawable(R.drawable.ic_tab_form)), Form.class, null);
+		mTabsAdapter.addTab(
+				mTabHost.newTabSpec("list").setIndicator(getResources().getString(R.string.title_tab_list),
+						getResources().getDrawable(R.drawable.ic_tab_list)), List.class, null);
 
 		if (savedInstanceState != null) {
 			mTabHost.setCurrentTabByTag(savedInstanceState.getString("tab"));
@@ -145,5 +152,11 @@ public class Home extends FragmentActivity {
 		@Override
 		public void onPageScrollStateChanged(int state) {
 		}
+	}
+	
+	@Override
+	protected void onDestroy() {
+		DatabaseUtil.close();
+		super.onDestroy();
 	}
 }

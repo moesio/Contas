@@ -29,6 +29,58 @@ public class Form extends Fragment {
 	private EditText editDC;
 	private DatePicker datePicker;
 
+	private class SaveListener implements OnClickListener {
+		@Override
+		public void onClick(View v) {
+			switch (v.getId()) {
+			case R.id.btnSave:
+				save();
+				break;
+			case R.id.btnCancel:
+				clearFields();
+				break;
+			default:
+				break;
+			}
+		}
+
+		private void clearFields() {
+			Calendar date = Calendar.getInstance();
+			datePicker.updateDate(date.get(Calendar.YEAR), date.get(Calendar.MONTH), date.get(Calendar.DATE));
+			editOM.setText("");
+			editCMSR.setText("");
+			editDC.setText("");
+
+			editOM.requestFocus();
+		}
+
+		private void save() {
+			Calendar date = Calendar.getInstance();
+			date.set(Calendar.YEAR, datePicker.getYear());
+			date.set(Calendar.MONTH, datePicker.getMonth());
+			date.set(Calendar.DATE, datePicker.getDayOfMonth());
+
+			String omString = editOM.getText().toString();
+			String cmsrString = editCMSR.getText().toString();
+			String dcString = editDC.getText().toString();
+			Double om = Double.valueOf(omString.length() == 0 ? "0" : omString);
+			Double cmsr = Double.valueOf(cmsrString.length() == 0 ? "0" : cmsrString);
+			Double dc = Double.valueOf(dcString.length() == 0 ? "0" : dcString);
+
+			Collect collection = new Collect().setDate(date).setSent(false).setOm(om).setCmsr(cmsr).setDc(dc);
+			try {
+				if (manager.save(collection)) {
+					clearFields();
+					Toast.makeText(getActivity(), getResources().getString(R.string.database_save_ok),
+							Toast.LENGTH_LONG).show();
+				}
+			} catch (CollectNotAllowedException e) {
+				new AlertDialog.Builder(getActivity()).setMessage(R.string.collect_forbidden)
+						.setPositiveButton(android.R.string.ok, null).show();
+			}
+		}
+	}
+
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
@@ -41,60 +93,15 @@ public class Form extends Fragment {
 		editDC = (EditText) getView().findViewById(R.id.editDC);
 		datePicker = (DatePicker) getView().findViewById(R.id.datePicker);
 
-		btnSave.setOnClickListener(new OnClickListener() {
-
-			@Override
-			public void onClick(View v) {
-				Calendar date = Calendar.getInstance();
-				date.set(Calendar.YEAR, datePicker.getYear());
-				date.set(Calendar.MONTH, datePicker.getMonth());
-				date.set(Calendar.DATE, datePicker.getDayOfMonth());
-
-				String omString = editOM.getText().toString();
-				String cmsrString = editCMSR.getText().toString();
-				String dcString = editDC.getText().toString();
-				Double om = Double.valueOf(omString.length() == 0 ? "0" : omString);
-				Double cmsr = Double.valueOf(cmsrString.length() == 0 ? "0" : cmsrString);
-				Double dc = Double.valueOf(dcString.length() == 0 ? "0" : dcString);
-
-				Collect collection = new Collect().setDate(date).setSent(false).setOm(om).setCmsr(cmsr).setDc(dc);
-				try {
-					if (manager.save(collection)) {
-						clearFields();
-						Toast.makeText(getActivity(), getResources().getString(R.string.database_save_ok),
-								Toast.LENGTH_LONG).show();
-					}
-				} catch (CollectNotAllowedException e) {
-					new AlertDialog.Builder(getActivity()).setMessage(R.string.collect_forbidden)
-							.setPositiveButton(android.R.string.ok, null).show();
-				}
-			}
-		});
-
-		btnCancel.setOnClickListener(new OnClickListener() {
-
-			@Override
-			public void onClick(View v) {
-				clearFields();
-			}
-
-		});
+		SaveListener saveListener = new SaveListener();
+		btnSave.setOnClickListener(saveListener);
+		btnCancel.setOnClickListener(saveListener);
 	}
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		View view = inflater.inflate(R.layout.layout_form, container, false);
 		return view;
-	}
-
-	private void clearFields() {
-		Calendar date = Calendar.getInstance();
-		datePicker.updateDate(date.get(Calendar.YEAR), date.get(Calendar.MONTH), date.get(Calendar.DATE));
-		editOM.setText("");
-		editCMSR.setText("");
-		editDC.setText("");
-
-		editOM.requestFocus();
 	}
 
 }
