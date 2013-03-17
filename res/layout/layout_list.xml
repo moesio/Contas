@@ -25,7 +25,8 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"
             android:layout_weight="1"
-            android:text="@string/btn_refresh" />
+            android:text="@string/btn_refresh"
+            android:visibility="gone" />
 
         <Button
             android:id="@+id/btnCloseMonth"

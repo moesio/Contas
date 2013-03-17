@@ -15,6 +15,7 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import com.seimos.contas.R;
+import com.seimos.contas.activity.Home;
 import com.seimos.contas.exception.CollectNotAllowedException;
 import com.seimos.contas.manager.Manager;
 import com.seimos.contas.model.Collect;
@@ -73,6 +74,11 @@ public class Form extends Fragment {
 					clearFields();
 					Toast.makeText(getActivity(), getResources().getString(R.string.database_save_ok),
 							Toast.LENGTH_LONG).show();
+
+					// TODO Corrigir esse acoplamento
+					Home activity = (Home) getActivity();
+					List listFragment = (List) activity.getmTabsAdapter().getItem(1);
+					listFragment.getAdapter().refresh();
 				}
 			} catch (CollectNotAllowedException e) {
 				new AlertDialog.Builder(getActivity()).setMessage(R.string.collect_forbidden)

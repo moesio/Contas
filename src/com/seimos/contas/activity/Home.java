@@ -4,7 +4,6 @@ import java.util.ArrayList;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
-import android.database.DatabaseUtils;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
@@ -17,7 +16,6 @@ import android.widget.TabHost;
 import android.widget.TabWidget;
 
 import com.seimos.contas.R;
-import com.seimos.contas.database.DatabaseHelper;
 import com.seimos.contas.database.DatabaseUtil;
 import com.seimos.contas.fragment.Form;
 import com.seimos.contas.fragment.List;
@@ -66,15 +64,19 @@ public class Home extends FragmentActivity {
 		private final ViewPager mViewPager;
 		private final ArrayList<TabInfo> mTabs = new ArrayList<TabInfo>();
 
-		static final class TabInfo {
+		public static final class TabInfo {
 			private final String tag;
-			private final Class<?> clss;
+			private final Fragment fragment;
 			private final Bundle args;
 
-			TabInfo(String _tag, Class<?> _class, Bundle _args) {
+			TabInfo(String _tag, Fragment _fragment, Bundle _args) {
 				tag = _tag;
-				clss = _class;
+				fragment = _fragment;
 				args = _args;
+			}
+
+			public Fragment getFragment() {
+				return fragment;
 			}
 		}
 
@@ -108,7 +110,8 @@ public class Home extends FragmentActivity {
 			tabSpec.setContent(new DummyTabFactory(mContext));
 			String tag = tabSpec.getTag();
 
-			TabInfo info = new TabInfo(tag, clss, args);
+			Fragment fragment = Fragment.instantiate(mContext, clss.getName(), args);
+			TabInfo info = new TabInfo(tag, fragment, args);
 			mTabs.add(info);
 			mTabHost.addTab(tabSpec);
 			notifyDataSetChanged();
@@ -122,7 +125,7 @@ public class Home extends FragmentActivity {
 		@Override
 		public Fragment getItem(int position) {
 			TabInfo info = mTabs.get(position);
-			return Fragment.instantiate(mContext, info.clss.getName(), info.args);
+			return info.getFragment();
 		}
 
 		@Override
@@ -153,10 +156,14 @@ public class Home extends FragmentActivity {
 		public void onPageScrollStateChanged(int state) {
 		}
 	}
-	
+
 	@Override
 	protected void onDestroy() {
 		DatabaseUtil.close();
 		super.onDestroy();
+	}
+
+	public TabsAdapter getmTabsAdapter() {
+		return mTabsAdapter;
 	}
 }

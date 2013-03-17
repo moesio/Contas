@@ -5,26 +5,17 @@ import java.util.Calendar;
 import java.util.Collections;
 
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.res.Configuration;
 import android.os.Bundle;
 import android.support.v4.app.ListFragment;
 import android.text.Html;
-import android.util.AttributeSet;
-import android.view.ContextMenu;
-import android.view.ContextMenu.ContextMenuInfo;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
-import android.view.animation.Animation;
 import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
@@ -397,153 +388,4 @@ public class List extends ListFragment {
 		return adapter;
 	}
 
-	@Override
-	public void onActivityResult(int requestCode, int resultCode, Intent data) {
-		System.out.println(1);
-		super.onActivityResult(requestCode, resultCode, data);
-	}
-
-	@Override
-	public void onAttach(Activity activity) {
-		System.out.println(2);
-		super.onAttach(activity);
-	}
-
-	@Override
-	public void onConfigurationChanged(Configuration newConfig) {
-		System.out.println(3);
-		super.onConfigurationChanged(newConfig);
-	}
-
-	@Override
-	public boolean onContextItemSelected(MenuItem item) {
-		System.out.println(4);
-		return super.onContextItemSelected(item);
-	}
-
-	@Override
-	public void onCreate(Bundle savedInstanceState) {
-		System.out.println(5);
-		super.onCreate(savedInstanceState);
-	}
-
-	@Override
-	public Animation onCreateAnimation(int transit, boolean enter, int nextAnim) {
-		System.out.println(6);
-		return super.onCreateAnimation(transit, enter, nextAnim);
-	}
-
-	@Override
-	public void onCreateContextMenu(ContextMenu menu, View v, ContextMenuInfo menuInfo) {
-		System.out.println(7);
-		super.onCreateContextMenu(menu, v, menuInfo);
-	}
-
-	@Override
-	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-		System.out.println(8);
-		super.onCreateOptionsMenu(menu, inflater);
-	}
-
-	@Override
-	public void onDestroy() {
-		System.out.println(9);
-		super.onDestroy();
-	}
-
-	@Override
-	public void onDestroyOptionsMenu() {
-		System.out.println(10);
-		super.onDestroyOptionsMenu();
-	}
-
-	@Override
-	public void onDestroyView() {
-		System.out.println(11);
-		super.onDestroyView();
-	}
-
-	@Override
-	public void onDetach() {
-		System.out.println(12);
-		super.onDetach();
-	}
-
-	@Override
-	public void onHiddenChanged(boolean hidden) {
-		System.out.println(13);
-		super.onHiddenChanged(hidden);
-	}
-
-	@Override
-	public void onInflate(Activity activity, AttributeSet attrs, Bundle savedInstanceState) {
-		System.out.println(14);
-		super.onInflate(activity, attrs, savedInstanceState);
-	}
-
-	@Override
-	public void onLowMemory() {
-		System.out.println(15);
-		super.onLowMemory();
-	}
-
-	@Override
-	public boolean onOptionsItemSelected(MenuItem item) {
-		System.out.println(16);
-		return super.onOptionsItemSelected(item);
-	}
-
-	@Override
-	public void onOptionsMenuClosed(Menu menu) {
-		System.out.println(17);
-		super.onOptionsMenuClosed(menu);
-	}
-
-	@Override
-	public void onPause() {
-		System.out.println(18);
-		super.onPause();
-	}
-
-	@Override
-	public void onPrepareOptionsMenu(Menu menu) {
-		System.out.println(19);
-		super.onPrepareOptionsMenu(menu);
-	}
-
-	@Override
-	public void onResume() {
-		System.out.println(20);
-		super.onResume();
-	}
-
-	@Override
-	public void onSaveInstanceState(Bundle outState) {
-		System.out.println(21);
-		super.onSaveInstanceState(outState);
-	}
-
-	@Override
-	public void onStart() {
-		System.out.println(22);
-		super.onStart();
-	}
-
-	@Override
-	public void onStop() {
-		System.out.println(23);
-		super.onStop();
-	}
-
-	@Override
-	public void onViewCreated(View view, Bundle savedInstanceState) {
-		System.out.println(24);
-		super.onViewCreated(view, savedInstanceState);
-	}
-
-	@Override
-	public void onViewStateRestored(Bundle savedInstanceState) {
-		System.out.println(25);
-		super.onViewStateRestored(savedInstanceState);
-	}
 }
