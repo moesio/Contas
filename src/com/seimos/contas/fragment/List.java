@@ -16,11 +16,11 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
-import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -33,14 +33,6 @@ import com.seimos.contas.model.Collect;
  * @author moesio @ gmail.com
  * @date Mar 12, 2013 2:10:21 PM
  */
-/**
- * @author moesio @ gmail.com
- * @date Mar 12, 2013 2:11:08 PM
- */
-/**
- * @author moesio @ gmail.com
- * @date Mar 12, 2013 2:11:26 PM
- */
 @SuppressLint("SimpleDateFormat")
 public class List extends ListFragment {
 
@@ -49,8 +41,26 @@ public class List extends ListFragment {
 	private Button btnRefresh;
 	private Button btnCloseMonth;
 	private Manager manager;
-	private Collect currentCollect;
 	private java.util.List<Collect> list = Collections.emptyList();
+
+	private class LongClickItemListener implements AdapterView.OnItemLongClickListener {
+		@Override
+		public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+			
+			Collect collect = (Collect) view.getTag();
+			android.content.DialogInterface.OnClickListener listener = new ItemRemovalDialogConfirmListener(collect);
+
+			AlertDialog itemRemovalDialog = new AlertDialog.Builder(getActivity()).create();
+			itemRemovalDialog.setTitle(getResources().getString(R.string.title_dialog_confirm));
+			itemRemovalDialog.setMessage(getResources().getString(R.string.txt_confirm_deletion));
+			itemRemovalDialog.setButton(AlertDialog.BUTTON_POSITIVE, getResources().getString(android.R.string.yes),
+					listener);
+			itemRemovalDialog.setButton(AlertDialog.BUTTON_NEGATIVE, getResources().getString(android.R.string.no),
+					listener);
+			itemRemovalDialog.show();
+			return true;
+		}
+	}
 
 	/**
 	 * Ouve o click do checkbox da listagem
@@ -60,7 +70,11 @@ public class List extends ListFragment {
 	private class ListItemSentCheckboxChangeListener implements OnClickListener {
 
 		@Override
-		public void onClick(View v) {
+		public void onClick(final View v) {
+
+			System.out.println(v.getTag());
+
+			//			Toast.makeText(getActivity(), ((Collect)getListView().getSelectedItem()).getId().toString(), Toast.LENGTH_SHORT).show();
 
 			final CheckBox chkSent = (CheckBox) v;
 			final boolean checked = chkSent.isChecked();
@@ -80,9 +94,9 @@ public class List extends ListFragment {
 
 								@Override
 								public void onClick(DialogInterface dialog, int which) {
-									System.out.println(checked);
-									currentCollect.setSent(checked);
-									if (!manager.update(currentCollect)) {
+									Collect collect = (Collect) v.getTag();
+									collect.setSent(checked);
+									if (!manager.update(collect)) {
 										adapter.refresh();
 									}
 								}
@@ -258,36 +272,23 @@ public class List extends ListFragment {
 	 * @date Mar 12, 2013 2:17:44 PM
 	 */
 	private class ItemRemovalDialogConfirmListener implements DialogInterface.OnClickListener {
-		private final long id;
 
-		private ItemRemovalDialogConfirmListener(long id) {
-			this.id = id;
+		private Collect collect;
+
+		public ItemRemovalDialogConfirmListener(Collect collect) {
+			this.collect = collect;
 		}
 
 		@Override
 		public void onClick(DialogInterface dialog, int which) {
 			switch (which) {
 			case AlertDialog.BUTTON_POSITIVE:
-				if (manager.remove(id)) {
+				if (manager.remove(collect.getId())) {
 					adapter.refresh();
 				}
 				break;
 			}
 		}
-	}
-
-	@Override
-	public void onListItemClick(ListView l, View v, int position, final long id) {
-		android.content.DialogInterface.OnClickListener listener = new ItemRemovalDialogConfirmListener(id);
-
-		AlertDialog itemRemovalDialog = new AlertDialog.Builder(getActivity()).create();
-		itemRemovalDialog.setTitle(getResources().getString(R.string.title_dialog_confirm));
-		itemRemovalDialog.setMessage(getResources().getString(R.string.txt_confirm_deletion));
-		itemRemovalDialog.setButton(AlertDialog.BUTTON_POSITIVE, getResources().getString(android.R.string.yes),
-				listener);
-		itemRemovalDialog.setButton(AlertDialog.BUTTON_NEGATIVE, getResources().getString(android.R.string.no),
-				listener);
-		itemRemovalDialog.show();
 	}
 
 	@Override
@@ -307,6 +308,10 @@ public class List extends ListFragment {
 		ToolbarListener toolbarListener = new ToolbarListener();
 		btnRefresh.setOnClickListener(toolbarListener);
 		btnCloseMonth.setOnClickListener(toolbarListener);
+
+		this.getListView().setLongClickable(true);
+
+		getListView().setOnItemLongClickListener(new LongClickItemListener());
 	}
 
 	@Override
@@ -318,6 +323,7 @@ public class List extends ListFragment {
 	public class Adapter extends BaseAdapter {
 
 		private Context context;
+		private ListItemSentCheckboxChangeListener listItemSentCheckboxChangeListener = new ListItemSentCheckboxChangeListener();
 
 		public Adapter(Context context) {
 			this.context = context;
@@ -351,8 +357,11 @@ public class List extends ListFragment {
 
 		@Override
 		public View getView(final int position, View convertView, ViewGroup parent) {
+			Collect collect = list.get(position);
+			
 			LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 			View view = inflater.inflate(R.layout.list_item, null);
+			view.setTag(collect);
 
 			TextView txtDate = (TextView) view.findViewById(R.id.txtDate);
 			TextView txtOM = (TextView) view.findViewById(R.id.txtOM);
@@ -360,18 +369,17 @@ public class List extends ListFragment {
 			TextView txtDC = (TextView) view.findViewById(R.id.txtDC);
 			TextView txtTotal = (TextView) view.findViewById(R.id.txtTotal);
 			CheckBox chkSent = (CheckBox) view.findViewById(R.id.chkSent);
+			chkSent.setTag(collect);
 
-			currentCollect = list.get(position);
-			Calendar date = currentCollect.getDate();
-			Boolean sent = currentCollect.getSent();
-			Double om = currentCollect.getOm();
-			Double cmsr = currentCollect.getCmsr();
-			Double dc = currentCollect.getDc();
+			Calendar date = collect.getDate();
+			Boolean sent = collect.getSent();
+			Double om = collect.getOm();
+			Double cmsr = collect.getCmsr();
+			Double dc = collect.getDc();
 			Double total = om + cmsr + dc;
 
-			System.out.println();
-			ListItemSentCheckboxChangeListener listener = new ListItemSentCheckboxChangeListener();
-			chkSent.setOnClickListener(listener);
+			listItemSentCheckboxChangeListener = new ListItemSentCheckboxChangeListener();
+			chkSent.setOnClickListener(listItemSentCheckboxChangeListener);
 
 			txtDate.setText(format.format(date.getTime()));
 			chkSent.setChecked(sent);
