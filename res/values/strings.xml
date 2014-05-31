@@ -28,5 +28,8 @@
     <color name="color_list_date">#ffff00</color>
     <string name="txt_confirm">Confirma</string>
     <string name="txt_confirm_sent">Confirma mudança deste item?</string>
+    <string name="value_copied">Valor copiado</string>
+    <string name="nothing_to_do">Nada a fazer</string>
+    <string name="pending_item">Item pendente</string>
 
 </resources>

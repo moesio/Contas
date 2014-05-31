@@ -38,12 +38,10 @@ public class Home extends FragmentActivity {
 		mViewPager = (ViewPager) findViewById(R.id.pager);
 
 		mTabsAdapter = new TabsAdapter(this, mTabHost, mViewPager);
-		mTabsAdapter.addTab(
-				mTabHost.newTabSpec("form").setIndicator(getResources().getString(R.string.title_tab_form),
-						getResources().getDrawable(R.drawable.ic_tab_form)), Form.class, null);
-		mTabsAdapter.addTab(
-				mTabHost.newTabSpec("list").setIndicator(getResources().getString(R.string.title_tab_list),
-						getResources().getDrawable(R.drawable.ic_tab_list)), List.class, null);
+		mTabsAdapter.addTab(mTabHost.newTabSpec("form").setIndicator(getResources().getString(R.string.title_tab_form), getResources().getDrawable(R.drawable.ic_tab_form)),
+				Form.class, null);
+		mTabsAdapter.addTab(mTabHost.newTabSpec("list").setIndicator(getResources().getString(R.string.title_tab_list), getResources().getDrawable(R.drawable.ic_tab_list)),
+				List.class, null);
 
 		if (savedInstanceState != null) {
 			mTabHost.setCurrentTabByTag(savedInstanceState.getString("tab"));
@@ -53,12 +51,11 @@ public class Home extends FragmentActivity {
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		// Inflate the menu; this adds items to the action bar if it is present.
-		getMenuInflater().inflate(R.menu.activity_home, menu);
+		//		getMenuInflater().inflate(R.menu.activity_home, menu);
 		return true;
 	}
 
-	public static class TabsAdapter extends FragmentPagerAdapter implements TabHost.OnTabChangeListener,
-			ViewPager.OnPageChangeListener {
+	public static class TabsAdapter extends FragmentPagerAdapter implements TabHost.OnTabChangeListener, ViewPager.OnPageChangeListener {
 		private final Context mContext;
 		private final TabHost mTabHost;
 		private final ViewPager mViewPager;

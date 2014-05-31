@@ -66,11 +66,13 @@ public class Collect {
 
 	@Override
 	public String toString() {
-		return "Collect [id="
-				+ id
-				+ ", date="
-				+ (date == null ? null : date.get(Calendar.YEAR) + "-" + (date.get(Calendar.MONTH) + 1) + "-"
-						+ date.get(Calendar.DATE)) + ", om=" + om + ", cmsr=" + cmsr + ", dc=" + dc + "]";
+		return "Collect [id=" + id //
+				+ ", date=" + (date == null ? null : date.get(Calendar.YEAR) + "-" + (date.get(Calendar.MONTH) + 1) + "-" + date.get(Calendar.DATE)) //
+				+ ", om=" + om //
+				+ ", cmsr=" + cmsr //
+				+ ", dc=" + dc //
+				+ ", sent=" + sent.toString() //
+				+ "]";
 	}
 
 }

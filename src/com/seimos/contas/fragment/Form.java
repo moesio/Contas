@@ -1,6 +1,7 @@
 package com.seimos.contas.fragment;
 
 import java.util.Calendar;
+import java.util.Timer;
 
 import android.app.AlertDialog;
 import android.os.Bundle;
@@ -19,6 +20,7 @@ import com.seimos.contas.activity.Home;
 import com.seimos.contas.exception.CollectNotAllowedException;
 import com.seimos.contas.manager.Manager;
 import com.seimos.contas.model.Collect;
+import com.seimos.contas.service.NotifyPendindCollectScheduler;
 
 public class Form extends Fragment {
 
@@ -56,6 +58,7 @@ public class Form extends Fragment {
 		}
 
 		private void save() {
+
 			Calendar date = Calendar.getInstance();
 			date.set(Calendar.YEAR, datePicker.getYear());
 			date.set(Calendar.MONTH, datePicker.getMonth());
@@ -68,21 +71,25 @@ public class Form extends Fragment {
 			Double cmsr = Double.valueOf(cmsrString.length() == 0 ? "0" : cmsrString);
 			Double dc = Double.valueOf(dcString.length() == 0 ? "0" : dcString);
 
-			Collect collection = new Collect().setDate(date).setSent(false).setOm(om).setCmsr(cmsr).setDc(dc);
-			try {
-				if (manager.save(collection)) {
-					clearFields();
-					Toast.makeText(getActivity(), getResources().getString(R.string.database_save_ok),
-							Toast.LENGTH_LONG).show();
+			if (Double.valueOf(om) > 0 || Double.valueOf(cmsr) > 0 || Double.valueOf(dc) > 0) {
+				Collect collection = new Collect().setDate(date).setSent(false).setOm(om).setCmsr(cmsr).setDc(dc);
+				try {
+					if (manager.save(collection)) {
+						clearFields();
+						Toast.makeText(getActivity(), R.string.database_save_ok, Toast.LENGTH_LONG).show();
 
-					// TODO Corrigir esse acoplamento
-					Home activity = (Home) getActivity();
-					List listFragment = (List) activity.getmTabsAdapter().getItem(1);
-					listFragment.getAdapter().refresh();
+						// TODO Corrigir esse acoplamento
+						Home activity = (Home) getActivity();
+						List listFragment = (List) activity.getmTabsAdapter().getItem(1);
+						listFragment.getAdapter().refresh();
+
+//						scheduleNotification(date);
+					}
+				} catch (CollectNotAllowedException e) {
+					new AlertDialog.Builder(getActivity()).setMessage(R.string.collect_forbidden).setPositiveButton(android.R.string.ok, null).show();
 				}
-			} catch (CollectNotAllowedException e) {
-				new AlertDialog.Builder(getActivity()).setMessage(R.string.collect_forbidden)
-						.setPositiveButton(android.R.string.ok, null).show();
+			} else {
+				Toast.makeText(getActivity(), R.string.nothing_to_do, Toast.LENGTH_SHORT).show();
 			}
 		}
 	}
@@ -108,6 +115,29 @@ public class Form extends Fragment {
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		View view = inflater.inflate(R.layout.layout_form, container, false);
 		return view;
+	}
+
+	private void scheduleNotification(Calendar date) {
+		NotifyPendindCollectScheduler task = new NotifyPendindCollectScheduler(getActivity());
+
+		Timer timer = new Timer();
+		timer.scheduleAtFixedRate(task, setToNextDayAtNoon(date).getTime(), 86400000L); // repeat every 24 hours
+	}
+
+	private Calendar setToNextDayAtNoon(Calendar date) {
+		date.add(Calendar.DATE, 1);
+		date.set(Calendar.HOUR_OF_DAY, 12);
+		date.set(Calendar.MINUTE, 0);
+		date.set(Calendar.SECOND, 0);
+
+		if (date.get(Calendar.DAY_OF_WEEK) == Calendar.SATURDAY) {
+			date.add(Calendar.DATE, 1);
+		}
+		if (date.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY) {
+			date.add(Calendar.DATE, 1);
+		}
+
+		return date;
 	}
 
 }

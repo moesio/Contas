@@ -17,6 +17,7 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
 import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
@@ -43,22 +44,32 @@ public class List extends ListFragment {
 	private Manager manager;
 	private java.util.List<Collect> list = Collections.emptyList();
 
-	private class LongClickItemListener implements AdapterView.OnItemLongClickListener {
+	@SuppressLint("NewApi")
+	private class ClickItemListener implements AdapterView.OnItemLongClickListener, OnItemClickListener {
 		@Override
 		public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-			
+
 			Collect collect = (Collect) view.getTag();
 			android.content.DialogInterface.OnClickListener listener = new ItemRemovalDialogConfirmListener(collect);
 
 			AlertDialog itemRemovalDialog = new AlertDialog.Builder(getActivity()).create();
 			itemRemovalDialog.setTitle(getResources().getString(R.string.title_dialog_confirm));
 			itemRemovalDialog.setMessage(getResources().getString(R.string.txt_confirm_deletion));
-			itemRemovalDialog.setButton(AlertDialog.BUTTON_POSITIVE, getResources().getString(android.R.string.yes),
-					listener);
-			itemRemovalDialog.setButton(AlertDialog.BUTTON_NEGATIVE, getResources().getString(android.R.string.no),
-					listener);
+			itemRemovalDialog.setButton(AlertDialog.BUTTON_POSITIVE, getResources().getString(android.R.string.yes), listener);
+			itemRemovalDialog.setButton(AlertDialog.BUTTON_NEGATIVE, getResources().getString(android.R.string.no), listener);
 			itemRemovalDialog.show();
 			return true;
+		}
+
+		@Override
+		public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+			TextView txtTotal = (TextView) view.findViewById(R.id.txtTotal);
+			String total = txtTotal.getText().toString();
+
+			android.text.ClipboardManager clipboard = (android.text.ClipboardManager) getActivity().getSystemService(Context.CLIPBOARD_SERVICE);
+			clipboard.setText(total);
+			
+			Toast.makeText(getActivity(), getString(R.string.value_copied).concat(" ").concat(total), Toast.LENGTH_SHORT).show();
 		}
 	}
 
@@ -70,37 +81,29 @@ public class List extends ListFragment {
 	private class ListItemSentCheckboxChangeListener implements OnClickListener {
 
 		@Override
-		public void onClick(final View v) {
+		public void onClick(final View view) {
 
-			System.out.println(v.getTag());
-
-			//			Toast.makeText(getActivity(), ((Collect)getListView().getSelectedItem()).getId().toString(), Toast.LENGTH_SHORT).show();
-
-			final CheckBox chkSent = (CheckBox) v;
+			final CheckBox chkSent = (CheckBox) view;
 			final boolean checked = chkSent.isChecked();
 
-			AlertDialog confirmDialog = new AlertDialog.Builder(getActivity())
-					.setTitle(R.string.txt_confirm)
+			AlertDialog confirmDialog = new AlertDialog.Builder(getActivity()).setTitle(R.string.txt_confirm)
 					.setNeutralButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
 
 						@Override
 						public void onClick(DialogInterface dialog, int which) {
 							chkSent.setChecked(!checked);
 						}
-					})
-					.setMessage(R.string.txt_confirm_sent)
-					.setPositiveButton(getResources().getString(android.R.string.ok),
-							new DialogInterface.OnClickListener() {
+					}).setMessage(R.string.txt_confirm_sent).setPositiveButton(getResources().getString(android.R.string.ok), new DialogInterface.OnClickListener() {
 
-								@Override
-								public void onClick(DialogInterface dialog, int which) {
-									Collect collect = (Collect) v.getTag();
-									collect.setSent(checked);
-									if (!manager.update(collect)) {
-										adapter.refresh();
-									}
-								}
-							}).create();
+						@Override
+						public void onClick(DialogInterface dialog, int which) {
+							Collect collect = (Collect) view.getTag();
+							collect.setSent(checked);
+							if (!manager.update(collect)) {
+								adapter.refresh();
+							}
+						}
+					}).create();
 			confirmDialog.show();
 		}
 	}
@@ -139,8 +142,7 @@ public class List extends ListFragment {
 			SimpleDateFormat format = new SimpleDateFormat("MMMM/yyyy");
 
 			String smsMessage = String.format(
-					getResources().getString(R.string.title_dialog_summary) + " " + format.format(baseDate.getTime())
-							+ "\n" + getResources().getString(R.string.txt_om) //
+					getResources().getString(R.string.title_dialog_summary) + " " + format.format(baseDate.getTime()) + "\n" + getResources().getString(R.string.txt_om) //
 							+ " %1$,.2f\n" + getResources().getString(R.string.txt_cmsr) //
 							+ " %2$,.2f\n" + getResources().getString(R.string.txt_extra_value) //
 							+ " %3$,.2f\n" + "---------------\n" //
@@ -182,25 +184,21 @@ public class List extends ListFragment {
 				Toast.makeText(getActivity(), R.string.list_empty, Toast.LENGTH_SHORT).show();
 			} else {
 
-				LayoutInflater inflater = (LayoutInflater) getActivity().getSystemService(
-						Context.LAYOUT_INFLATER_SERVICE);
+				LayoutInflater inflater = (LayoutInflater) getActivity().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 				View view = inflater.inflate(R.layout.layout_extra_value, null);
 
 				final EditText editExtraValue = (EditText) view.findViewById(R.id.editExtraValue);
 
-				ConfirmSmsSendDialogListener confirmSmsSendDialogListener = new ConfirmSmsSendDialogListener(
-						editExtraValue);
-				AlertDialog confirmSmsSendDialog = new AlertDialog.Builder(getActivity()).setView(view)
-						.setNeutralButton(android.R.string.cancel, null)
+				ConfirmSmsSendDialogListener confirmSmsSendDialogListener = new ConfirmSmsSendDialogListener(editExtraValue);
+				AlertDialog confirmSmsSendDialog = new AlertDialog.Builder(getActivity()).setView(view).setNeutralButton(android.R.string.cancel, null)
 						.setPositiveButton(android.R.string.ok, confirmSmsSendDialogListener).create();
 				confirmSmsSendDialog.show();
 			}
 		}
 
 		private void clearList() {
-			AlertDialog clearListDialog = new AlertDialog.Builder(getActivity()).setMessage(R.string.txt_confirm_clear)
-					.setTitle(R.string.title_dialog_confirm).setNeutralButton(android.R.string.cancel, null)
-					.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+			AlertDialog clearListDialog = new AlertDialog.Builder(getActivity()).setMessage(R.string.txt_confirm_clear).setTitle(R.string.title_dialog_confirm)
+					.setNeutralButton(android.R.string.cancel, null).setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
 
 						@Override
 						public void onClick(DialogInterface dialog, int which) {
@@ -258,8 +256,7 @@ public class List extends ListFragment {
 			android.content.DialogInterface.OnClickListener listener = new SummaryDialogToolbarListener();
 
 			summaryDialog.setButton(AlertDialog.BUTTON_POSITIVE, getResources().getString(R.string.btn_send), listener);
-			summaryDialog.setButton(AlertDialog.BUTTON_NEGATIVE, getResources().getString(R.string.btn_cancel),
-					listener);
+			summaryDialog.setButton(AlertDialog.BUTTON_NEGATIVE, getResources().getString(R.string.btn_cancel), listener);
 			summaryDialog.setButton(AlertDialog.BUTTON_NEUTRAL, getResources().getString(R.string.btn_clear), listener);
 
 			summaryDialog.show();
@@ -311,7 +308,9 @@ public class List extends ListFragment {
 
 		this.getListView().setLongClickable(true);
 
-		getListView().setOnItemLongClickListener(new LongClickItemListener());
+		ClickItemListener clickItemListener = new ClickItemListener();
+		getListView().setOnItemLongClickListener(clickItemListener);
+		getListView().setOnItemClickListener(clickItemListener);
 	}
 
 	@Override
@@ -358,7 +357,7 @@ public class List extends ListFragment {
 		@Override
 		public View getView(final int position, View convertView, ViewGroup parent) {
 			Collect collect = list.get(position);
-			
+
 			LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 			View view = inflater.inflate(R.layout.list_item, null);
 			view.setTag(collect);

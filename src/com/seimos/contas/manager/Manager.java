@@ -24,7 +24,7 @@ public class Manager {
 
 	public boolean save(Collect collect) throws CollectNotAllowedException {
 		List<Collect> list = retrieveCollectFromOtherMonth(collect);
-		
+
 		if (list.isEmpty()) {
 			return dao.save(collect);
 		} else {
@@ -47,8 +47,7 @@ public class Manager {
 		cMax.set(Calendar.MONTH, month + 1);
 		cMax.set(Calendar.DATE, 1);
 
-		List<Collect> list = dao.retrieve(dao.COLUMNS, "date < ? or date >= ?",
-				new String[] { format.format(cMin.getTime()), format.format(cMax.getTime()) });
+		List<Collect> list = dao.retrieve(dao.COLUMNS, "date < ? or date >= ?", new String[] { format.format(cMin.getTime()), format.format(cMax.getTime()) });
 		return list;
 	}
 
@@ -66,6 +65,11 @@ public class Manager {
 
 	public boolean update(Collect collect) {
 		return dao.update(collect);
+	}
+
+	public boolean havePendingCollect() {
+		List<Collect> list = dao.retrieve(dao.COLUMNS, "sent = ?", new String[] { "0" });
+		return !list.isEmpty();
 	}
 
 }
