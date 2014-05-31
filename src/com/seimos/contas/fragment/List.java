@@ -123,14 +123,13 @@ public class List extends ListFragment {
 		@Override
 		public void onClick(DialogInterface dialog, int which) {
 
-			double om = 0, cmsr = 0;
+			double om = 0;
 			Calendar baseDate = null;
 			for (Collect collect : list) {
 				if (baseDate == null) {
 					baseDate = collect.getDate();
 				}
 				om += collect.getOm();
-				cmsr += collect.getCmsr();
 			}
 
 			double extraValue;
@@ -143,11 +142,10 @@ public class List extends ListFragment {
 
 			String smsMessage = String.format(
 					getResources().getString(R.string.title_dialog_summary) + " " + format.format(baseDate.getTime()) + "\n" + getResources().getString(R.string.txt_om) //
-							+ " %1$,.2f\n" + getResources().getString(R.string.txt_cmsr) //
-							+ " %2$,.2f\n" + getResources().getString(R.string.txt_extra_value) //
-							+ " %3$,.2f\n" + "---------------\n" //
+							+ " %1$,.2f\n" + getResources().getString(R.string.txt_extra_value) //
+							+ " %2$,.2f\n" + "---------------\n" //
 							+ getActivity().getString(R.string.total) //
-							+ " %4$,.2f", om, cmsr, extraValue, (om + cmsr + extraValue));
+							+ " %3$,.2f", om, extraValue, (om + extraValue));
 			Intent smsIntent = new Intent(Intent.ACTION_VIEW);
 			smsIntent.setType("vnd.android-dir/mms-sms");
 			smsIntent.putExtra("sms_body", smsMessage);
@@ -238,19 +236,17 @@ public class List extends ListFragment {
 			summaryDialog.setTitle(getResources().getString(R.string.title_dialog_summary));
 
 			final java.util.List<Collect> list = adapter.getList();
-			double om = 0, cmsr = 0, dc = 0;
+			double om = 0, dc = 0;
 			for (Collect collect : list) {
 				om += collect.getOm();
-				cmsr += collect.getCmsr();
 				dc += collect.getDc();
 			}
 
 			final String formattedMessage = String.format("<p>" + //
 					"<b>" + getResources().getString(R.string.txt_om) + "</b> %1$,.2f<br/>" + //
-					"<b>" + getResources().getString(R.string.txt_cmsr) + "</b> %2$,.2f<br/>" + //
-					"<b>" + getResources().getString(R.string.txt_dc) + "</b> %3$,.2f<br/>" + //
-					"<b>" + getResources().getString(R.string.total) + "</b> %4$,.2f" + //
-					"</p>", om, cmsr, dc, (om + cmsr + dc));
+					"<b>" + getResources().getString(R.string.txt_dc) + "</b> %2$,.2f<br/>" + //
+					"<b>" + getResources().getString(R.string.total) + "</b> %3$,.2f" + //
+					"</p>", om, dc, (om + dc));
 			summaryDialog.setMessage(Html.fromHtml(formattedMessage));
 
 			android.content.DialogInterface.OnClickListener listener = new SummaryDialogToolbarListener();
@@ -364,7 +360,6 @@ public class List extends ListFragment {
 
 			TextView txtDate = (TextView) view.findViewById(R.id.txtDate);
 			TextView txtOM = (TextView) view.findViewById(R.id.txtOM);
-			TextView txtCMSR = (TextView) view.findViewById(R.id.txtCMSR);
 			TextView txtDC = (TextView) view.findViewById(R.id.txtDC);
 			TextView txtTotal = (TextView) view.findViewById(R.id.txtTotal);
 			CheckBox chkSent = (CheckBox) view.findViewById(R.id.chkSent);
@@ -373,9 +368,8 @@ public class List extends ListFragment {
 			Calendar date = collect.getDate();
 			Boolean sent = collect.getSent();
 			Double om = collect.getOm();
-			Double cmsr = collect.getCmsr();
 			Double dc = collect.getDc();
-			Double total = om + cmsr + dc;
+			Double total = om + dc;
 
 			listItemSentCheckboxChangeListener = new ListItemSentCheckboxChangeListener();
 			chkSent.setOnClickListener(listItemSentCheckboxChangeListener);
@@ -383,7 +377,6 @@ public class List extends ListFragment {
 			txtDate.setText(format.format(date.getTime()));
 			chkSent.setChecked(sent);
 			txtOM.setText(String.format(" %1$,.2f", om));
-			txtCMSR.setText(String.format(" %1$,.2f", cmsr));
 			txtDC.setText(String.format(" %1$,.2f", dc));
 			txtTotal.setText(String.format(" %1$,.2f", total));
 

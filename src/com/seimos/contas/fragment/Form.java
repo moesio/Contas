@@ -28,7 +28,6 @@ public class Form extends Fragment {
 	private Button btnSave;
 	private Button btnCancel;
 	private EditText editOM;
-	private EditText editCMSR;
 	private EditText editDC;
 	private DatePicker datePicker;
 
@@ -51,7 +50,6 @@ public class Form extends Fragment {
 			Calendar date = Calendar.getInstance();
 			datePicker.updateDate(date.get(Calendar.YEAR), date.get(Calendar.MONTH), date.get(Calendar.DATE));
 			editOM.setText("");
-			editCMSR.setText("");
 			editDC.setText("");
 
 			editOM.requestFocus();
@@ -65,14 +63,12 @@ public class Form extends Fragment {
 			date.set(Calendar.DATE, datePicker.getDayOfMonth());
 
 			String omString = editOM.getText().toString();
-			String cmsrString = editCMSR.getText().toString();
 			String dcString = editDC.getText().toString();
 			Double om = Double.valueOf(omString.length() == 0 ? "0" : omString);
-			Double cmsr = Double.valueOf(cmsrString.length() == 0 ? "0" : cmsrString);
 			Double dc = Double.valueOf(dcString.length() == 0 ? "0" : dcString);
 
-			if (Double.valueOf(om) > 0 || Double.valueOf(cmsr) > 0 || Double.valueOf(dc) > 0) {
-				Collect collection = new Collect().setDate(date).setSent(false).setOm(om).setCmsr(cmsr).setDc(dc);
+			if (Double.valueOf(om) > 0 || Double.valueOf(dc) > 0) {
+				Collect collection = new Collect().setDate(date).setSent(false).setOm(om).setDc(dc);
 				try {
 					if (manager.save(collection)) {
 						clearFields();
@@ -102,7 +98,6 @@ public class Form extends Fragment {
 		btnSave = (Button) getView().findViewById(R.id.btnSave);
 		btnCancel = (Button) getView().findViewById(R.id.btnCancel);
 		editOM = (EditText) getView().findViewById(R.id.editOM);
-		editCMSR = (EditText) getView().findViewById(R.id.editCMSR);
 		editDC = (EditText) getView().findViewById(R.id.editDC);
 		datePicker = (DatePicker) getView().findViewById(R.id.datePicker);
 
