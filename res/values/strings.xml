@@ -31,5 +31,5 @@
     <string name="value_copied">Valor copiado</string>
     <string name="nothing_to_do">Nada a fazer</string>
     <string name="pending_item">Item pendente</string>
-
+    <string name="default_locale">pt_BR</string>
 </resources>

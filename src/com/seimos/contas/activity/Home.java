@@ -1,9 +1,10 @@
 package com.seimos.contas.activity;
 
 import java.util.ArrayList;
+import java.util.Locale;
 
-import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.res.Configuration;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
@@ -20,7 +21,7 @@ import com.seimos.contas.database.DatabaseUtil;
 import com.seimos.contas.fragment.Form;
 import com.seimos.contas.fragment.List;
 
-@SuppressLint("NewApi")
+//@SuppressLint("NewApi")
 public class Home extends FragmentActivity {
 
 	TabHost mTabHost;
@@ -46,6 +47,16 @@ public class Home extends FragmentActivity {
 		if (savedInstanceState != null) {
 			mTabHost.setCurrentTabByTag(savedInstanceState.getString("tab"));
 		}
+
+		setDefaultLocale();
+	}
+
+	private void setDefaultLocale() {
+		Locale locale = new Locale(this.getString(R.string.default_locale));
+		Locale.setDefault(locale);
+		Configuration config = new Configuration();
+		config.locale = locale;
+		getBaseContext().getResources().updateConfiguration(config, getBaseContext().getResources().getDisplayMetrics());
 	}
 
 	@Override

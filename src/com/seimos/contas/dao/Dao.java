@@ -7,21 +7,21 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.List;
 
-import android.annotation.SuppressLint;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.util.Log;
 
 import com.seimos.contas.R;
 import com.seimos.contas.database.DatabaseUtil;
 import com.seimos.contas.model.Collect;
 
-@SuppressLint("SimpleDateFormat")
 public class Dao {
 
 	private Context context;
-	private SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+	private SimpleDateFormat format = (SimpleDateFormat) SimpleDateFormat.getDateInstance(); 
+//			new SimpleDateFormat("yyyy-MM-dd");
 	public final String TABLE;
 	public final String[] COLUMNS = { "_ID", "DATE", "SENT", "OM", "CMSR", "DC" };
 
@@ -49,9 +49,14 @@ public class Dao {
 	public List<Collect> list() {
 		SQLiteDatabase database = DatabaseUtil.open(context);
 
-		Cursor cursor = database.query(TABLE, COLUMNS, null, null, null, null, COLUMNS[1]);
-
-		List<Collect> list = extract(cursor);
+		List<Collect> list = new ArrayList<Collect>();
+		Cursor cursor;
+		try {
+			cursor = database.query(TABLE, COLUMNS, null, null, null, null, COLUMNS[1]);
+			list = extract(cursor);
+		} catch (Exception e) {
+			Log.e(context.getString(R.string.app_name), context.getString(R.string.database_access_error));
+		}
 		database.close();
 		return list;
 	}
@@ -98,11 +103,17 @@ public class Dao {
 
 	public List<Collect> retrieve(String[] projection, String selection, String[] selectionArgs) {
 		SQLiteDatabase database = DatabaseUtil.open(context);
-		Cursor cursor = database.query(TABLE, projection, selection, selectionArgs, null, null, null);
-		List<Collect> list = extract(cursor);
+		List<Collect> list = new ArrayList<Collect>();
+		
+		Cursor cursor;
+		try {
+			cursor = database.query(TABLE, projection, selection, selectionArgs, null, null, null);
+			list = extract(cursor);
+		} catch (Exception e) {
+			Log.e(context.getString(R.string.app_name), context.getString(R.string.database_access_error));
+		}
 
 		database.close();
-
 		return list;
 	}
 

@@ -74,5 +74,4 @@ public class Collect {
 				+ ", sent=" + sent.toString() //
 				+ "]";
 	}
-
 }

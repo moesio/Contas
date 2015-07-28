@@ -4,7 +4,6 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.List;
 
-import android.annotation.SuppressLint;
 import android.content.Context;
 
 import com.seimos.contas.dao.Dao;
@@ -16,10 +15,9 @@ public class Manager {
 	private Dao dao;
 	private SimpleDateFormat format;
 
-	@SuppressLint("SimpleDateFormat")
 	public Manager(Context context) {
 		this.dao = new Dao(context);
-		format = new SimpleDateFormat("yyyy-MM-dd");
+		format = (SimpleDateFormat) SimpleDateFormat.getInstance();//new SimpleDateFormat("yyyy-MM-dd");
 	}
 
 	public boolean save(Collect collect) throws CollectNotAllowedException {

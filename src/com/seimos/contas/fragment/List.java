@@ -4,7 +4,6 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Collections;
 
-import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -34,7 +33,7 @@ import com.seimos.contas.model.Collect;
  * @author moesio @ gmail.com
  * @date Mar 12, 2013 2:10:21 PM
  */
-@SuppressLint("SimpleDateFormat")
+//@SuppressLint("SimpleDateFormat")
 public class List extends ListFragment {
 
 	private SimpleDateFormat format;
@@ -44,7 +43,7 @@ public class List extends ListFragment {
 	private Manager manager;
 	private java.util.List<Collect> list = Collections.emptyList();
 
-	@SuppressLint("NewApi")
+//	@SuppressLint("NewApi")
 	private class ClickItemListener implements AdapterView.OnItemLongClickListener, OnItemClickListener {
 		@Override
 		public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
@@ -138,7 +137,7 @@ public class List extends ListFragment {
 			} catch (NumberFormatException e) {
 				extraValue = 0;
 			}
-			SimpleDateFormat format = new SimpleDateFormat("MMMM/yyyy");
+			SimpleDateFormat format = (SimpleDateFormat) SimpleDateFormat.getDateInstance();//new SimpleDateFormat("MMMM/yyyy");
 
 			String smsMessage = String.format(
 					getResources().getString(R.string.title_dialog_summary) + " " + format.format(baseDate.getTime()) + "\n" + getResources().getString(R.string.txt_om) //
@@ -291,7 +290,7 @@ public class List extends ListFragment {
 		Context context = getActivity();
 
 		manager = new Manager(context);
-		format = new SimpleDateFormat(context.getResources().getString(R.string.date_format));
+		format = (SimpleDateFormat) SimpleDateFormat.getDateInstance();//new SimpleDateFormat(context.getResources().getString(R.string.date_format));
 		adapter = new Adapter(context);
 		setListAdapter(adapter);
 
@@ -323,7 +322,7 @@ public class List extends ListFragment {
 		public Adapter(Context context) {
 			this.context = context;
 
-			refresh();
+//			refresh();
 		}
 
 		public java.util.List<Collect> getList() {
