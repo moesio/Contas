@@ -36,7 +36,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
 	private void createDb(SQLiteDatabase db) {
 		try {
-//			db.beginTransaction();
+			db.beginTransaction();
 			String[] tables = context.getResources().getStringArray(R.array.database_tables);
 			for (String table : tables) {
 				db.execSQL(table);
@@ -44,7 +44,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 		} catch (SQLException e) {
 			Log.e(context.getString(R.string.app_name), context.getString(R.string.database_access_error));
 		} finally {
-//			db.endTransaction();
+			db.setTransactionSuccessful();
+			db.endTransaction();
 		}
 	}
 }

@@ -21,7 +21,6 @@ import com.seimos.contas.database.DatabaseUtil;
 import com.seimos.contas.fragment.Form;
 import com.seimos.contas.fragment.List;
 
-//@SuppressLint("NewApi")
 public class Home extends FragmentActivity {
 
 	TabHost mTabHost;

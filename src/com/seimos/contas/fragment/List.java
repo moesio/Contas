@@ -33,7 +33,6 @@ import com.seimos.contas.model.Collect;
  * @author moesio @ gmail.com
  * @date Mar 12, 2013 2:10:21 PM
  */
-//@SuppressLint("SimpleDateFormat")
 public class List extends ListFragment {
 
 	private SimpleDateFormat format;
@@ -43,7 +42,6 @@ public class List extends ListFragment {
 	private Manager manager;
 	private java.util.List<Collect> list = Collections.emptyList();
 
-//	@SuppressLint("NewApi")
 	private class ClickItemListener implements AdapterView.OnItemLongClickListener, OnItemClickListener {
 		@Override
 		public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
@@ -322,7 +320,7 @@ public class List extends ListFragment {
 		public Adapter(Context context) {
 			this.context = context;
 
-//			refresh();
+			refresh();
 		}
 
 		public java.util.List<Collect> getList() {
