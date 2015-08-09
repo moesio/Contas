@@ -288,7 +288,7 @@ public class List extends ListFragment {
 		Context context = getActivity();
 
 		manager = new Manager(context);
-		format = (SimpleDateFormat) SimpleDateFormat.getDateInstance();//new SimpleDateFormat(context.getResources().getString(R.string.date_format));
+		format = new SimpleDateFormat(context.getResources().getString(R.string.date_format));
 		adapter = new Adapter(context);
 		setListAdapter(adapter);
 

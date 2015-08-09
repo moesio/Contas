@@ -7,6 +7,7 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.List;
 
+import android.annotation.SuppressLint;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
@@ -20,8 +21,8 @@ import com.seimos.contas.model.Collect;
 public class Dao {
 
 	private Context context;
-	private SimpleDateFormat format = (SimpleDateFormat) SimpleDateFormat.getDateInstance(); 
-//			new SimpleDateFormat("yyyy-MM-dd");
+	@SuppressLint("SimpleDateFormat")
+	private SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
 	public final String TABLE;
 	public final String[] COLUMNS = { "_ID", "DATE", "SENT", "OM", "CMSR", "DC" };
 
@@ -34,7 +35,8 @@ public class Dao {
 		SQLiteDatabase database = DatabaseUtil.open(context);
 
 		ContentValues values = new ContentValues();
-		values.put("date", format.format(collect.getDate().getTime()));
+		String format2 = format.format(collect.getDate().getTime());
+		values.put("date", format2);
 		values.put("sent", collect.getSent());
 		values.put("om", collect.getOm());
 		values.put("cmsr", collect.getCmsr());

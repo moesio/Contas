@@ -17,7 +17,7 @@ public class Manager {
 
 	public Manager(Context context) {
 		this.dao = new Dao(context);
-		format = (SimpleDateFormat) SimpleDateFormat.getInstance();//new SimpleDateFormat("yyyy-MM-dd");
+		format = new SimpleDateFormat("yyyy-MM-dd");
 	}
 
 	public boolean save(Collect collect) throws CollectNotAllowedException {
@@ -45,7 +45,9 @@ public class Manager {
 		cMax.set(Calendar.MONTH, month + 1);
 		cMax.set(Calendar.DATE, 1);
 
-		List<Collect> list = dao.retrieve(dao.COLUMNS, "date < ? or date >= ?", new String[] { format.format(cMin.getTime()), format.format(cMax.getTime()) });
+		String start = format.format(cMin.getTime());
+		String end = format.format(cMax.getTime());
+		List<Collect> list = dao.retrieve(dao.COLUMNS, "date < ? or date >= ?", new String[] { start, end });
 		return list;
 	}
 
