@@ -219,7 +219,7 @@ public class List extends ListFragment {
 			case R.id.btnRefresh:
 				adapter.refresh();
 				break;
-			case R.id.btnCloseMonth:
+			case R.id.btnSummary:
 				adapter.refresh();
 				closeMonth();
 				break;
@@ -250,7 +250,7 @@ public class List extends ListFragment {
 
 			summaryDialog.setButton(AlertDialog.BUTTON_POSITIVE, getResources().getString(R.string.btn_send), listener);
 			summaryDialog.setButton(AlertDialog.BUTTON_NEGATIVE, getResources().getString(R.string.btn_cancel), listener);
-			summaryDialog.setButton(AlertDialog.BUTTON_NEUTRAL, getResources().getString(R.string.btn_clear), listener);
+			summaryDialog.setButton(AlertDialog.BUTTON_NEUTRAL, getResources().getString(R.string.btn_close_month), listener);
 
 			summaryDialog.show();
 		}
@@ -293,7 +293,7 @@ public class List extends ListFragment {
 		setListAdapter(adapter);
 
 		btnRefresh = (Button) getView().findViewById(R.id.btnRefresh);
-		btnCloseMonth = (Button) getView().findViewById(R.id.btnCloseMonth);
+		btnCloseMonth = (Button) getView().findViewById(R.id.btnSummary);
 
 		ToolbarListener toolbarListener = new ToolbarListener();
 		btnRefresh.setOnClickListener(toolbarListener);
