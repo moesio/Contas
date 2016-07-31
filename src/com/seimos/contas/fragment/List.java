@@ -135,18 +135,27 @@ public class List extends ListFragment {
 			} catch (NumberFormatException e) {
 				extraValue = 0;
 			}
-			SimpleDateFormat format = (SimpleDateFormat) SimpleDateFormat.getDateInstance();//new SimpleDateFormat("MMMM/yyyy");
+			SimpleDateFormat format = new SimpleDateFormat("MMMM/yyyy");
 
-			String smsMessage = String.format(
+			String messageBody = String.format(
 					getResources().getString(R.string.title_dialog_summary) + " " + format.format(baseDate.getTime()) + "\n" + getResources().getString(R.string.txt_om) //
 							+ " %1$,.2f\n" + getResources().getString(R.string.txt_extra_value) //
 							+ " %2$,.2f\n" + "---------------\n" //
 							+ getActivity().getString(R.string.total) //
 							+ " %3$,.2f", om, extraValue, (om + extraValue));
-			Intent smsIntent = new Intent(Intent.ACTION_VIEW);
-			smsIntent.setType("vnd.android-dir/mms-sms");
-			smsIntent.putExtra("sms_body", smsMessage);
-			startActivity(smsIntent);
+			
+			  Intent sharingIntent = new Intent(android.content.Intent.ACTION_SEND);
+		        sharingIntent.setType("text/plain");
+//		        sharingIntent.putExtra(android.content.Intent.EXTRA_SUBJECT, "Subject Here");
+		        sharingIntent.putExtra(android.content.Intent.EXTRA_TEXT, messageBody);
+//		        startActivity(Intent.createChooser(sharingIntent, getResources().getString(R.string.share_using)));
+//		        startActivity(Intent.createChooser(sharingIntent, "algo"));
+		        startActivity(sharingIntent);
+			
+//			Intent smsIntent = new Intent(Intent.ACTION_VIEW);
+//			smsIntent.setType("vnd.android-dir/mms-sms");
+//			smsIntent.putExtra("sms_body", smsMessage);
+//			startActivity(smsIntent);
 		}
 	}
 

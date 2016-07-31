@@ -38,10 +38,10 @@ public class Home extends FragmentActivity {
 		mViewPager = (ViewPager) findViewById(R.id.pager);
 
 		mTabsAdapter = new TabsAdapter(this, mTabHost, mViewPager);
-		mTabsAdapter.addTab(mTabHost.newTabSpec("form").setIndicator(getResources().getString(R.string.title_tab_form), getResources().getDrawable(R.drawable.ic_tab_form)),
-				Form.class, null);
 		mTabsAdapter.addTab(mTabHost.newTabSpec("list").setIndicator(getResources().getString(R.string.title_tab_list), getResources().getDrawable(R.drawable.ic_tab_list)),
 				List.class, null);
+		mTabsAdapter.addTab(mTabHost.newTabSpec("form").setIndicator(getResources().getString(R.string.title_tab_form), getResources().getDrawable(R.drawable.ic_tab_form)),
+				Form.class, null);
 
 		if (savedInstanceState != null) {
 			mTabHost.setCurrentTabByTag(savedInstanceState.getString("tab"));

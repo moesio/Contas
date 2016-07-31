@@ -7,7 +7,6 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.List;
 
-import android.annotation.SuppressLint;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
@@ -21,7 +20,6 @@ import com.seimos.contas.model.Collect;
 public class Dao {
 
 	private Context context;
-	@SuppressLint("SimpleDateFormat")
 	private SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
 	public final String TABLE;
 	public final String[] COLUMNS = { "_ID", "DATE", "SENT", "OM", "CMSR", "DC" };
