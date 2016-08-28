@@ -38,7 +38,8 @@
             android:layout_gravity="right|center_vertical"
             android:gravity="right"
             android:text="@string/total"
-            android:textAppearance="?android:attr/textAppearanceMedium" />
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:textColor="@color/color_list_date" />
     </LinearLayout>
 
     <LinearLayout

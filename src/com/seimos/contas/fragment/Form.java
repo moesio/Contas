@@ -76,7 +76,7 @@ public class Form extends Fragment {
 
 						// TODO Corrigir esse acoplamento
 						Home activity = (Home) getActivity();
-						List listFragment = (List) activity.getmTabsAdapter().getItem(1);
+						List listFragment = (List) activity.getmTabsAdapter().getItem(0);
 						listFragment.getAdapter().refresh();
 
 //						scheduleNotification(date);

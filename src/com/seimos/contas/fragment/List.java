@@ -362,6 +362,13 @@ public class List extends ListFragment {
 
 			LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 			View view = inflater.inflate(R.layout.list_item, null);
+			int color;
+			if (position % 2 == 0) {
+				color = 0x22ffffff;
+			} else {
+				color = 0x00ffffff;
+			}
+			view.setBackgroundColor(color);
 			view.setTag(collect);
 
 			TextView txtDate = (TextView) view.findViewById(R.id.txtDate);
