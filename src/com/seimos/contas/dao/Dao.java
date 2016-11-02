@@ -52,7 +52,7 @@ public class Dao {
 		List<Collect> list = new ArrayList<Collect>();
 		Cursor cursor;
 		try {
-			cursor = database.query(TABLE, COLUMNS, null, null, null, null, COLUMNS[1]);
+			cursor = database.query(TABLE, COLUMNS, null, null, null, null, COLUMNS[1] + " DESC");
 			list = extract(cursor);
 		} catch (Exception e) {
 			Log.e(context.getString(R.string.app_name), context.getString(R.string.database_access_error));
